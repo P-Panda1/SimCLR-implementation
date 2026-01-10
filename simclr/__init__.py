@@ -13,6 +13,7 @@ from .train import train_simclr
 from .evaluate import train_linear_probe
 from .explainability import integrated_gradients, visualize_attribution
 from .domain_shift import CorruptedCIFAR10, evaluate_corruptions
+from .checkpoint import save_checkpoint, load_checkpoint
 
 __all__ = [
     'Config',
@@ -29,5 +30,6 @@ __all__ = [
     'visualize_attribution',
     'CorruptedCIFAR10',
     'evaluate_corruptions',
+    'save_checkpoint',
+    'load_checkpoint',
 ]
-

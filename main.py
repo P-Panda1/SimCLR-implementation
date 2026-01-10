@@ -2,6 +2,7 @@
 Main entry point for SimCLR training and evaluation pipeline.
 """
 
+import argparse
 import torch.nn.functional as F
 import torch
 from simclr import (
@@ -12,12 +13,23 @@ from simclr import (
     train_linear_probe,
     integrated_gradients,
     visualize_attribution,
-    evaluate_corruptions
+    evaluate_corruptions,
+    save_checkpoint,
+    load_checkpoint,
 )
 
 
 def main():
-    """Main execution function that runs the complete SimCLR pipeline."""
+    """Main execution function that runs the complete SimCLR pipeline.
+
+    Supports resuming from a saved checkpoint. Use --resume to load
+    weights from `Config.CHECKPOINT_PATH` before training.
+    """
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--resume', action='store_true',
+                        help='Load model checkpoint if present')
+    args = parser.parse_args()
 
     # Print configuration
     Config.print_config()
@@ -34,6 +46,15 @@ def main():
     print(
         f"Model initialized. Total parameters: {sum(p.numel() for p in model.parameters()):,}\n")
 
+    # Optionally resume from checkpoint
+    if args.resume:
+        loaded = load_checkpoint(model, path=Config.CHECKPOINT_PATH)
+        if loaded:
+            print(f"Loaded checkpoint from {Config.CHECKPOINT_PATH}")
+        else:
+            print(
+                f"No checkpoint found at {Config.CHECKPOINT_PATH}; training from scratch.")
+
     # 3. Self-supervised pretraining
     model = train_simclr(model, train_loader, epochs=Config.EPOCHS)
 
@@ -42,6 +63,19 @@ def main():
     probe, clean_accuracy = train_linear_probe(
         encoder, eval_train_loader, eval_test_loader)
     print(f"Clean Test Accuracy: {clean_accuracy:.2f}%\n")
+
+    # Save checkpoints if configured
+    if Config.SAVE_CHECKPOINTS:
+        try:
+            save_checkpoint(model, path=Config.CHECKPOINT_PATH)
+            print(f"Saved SimCLR checkpoint to {Config.CHECKPOINT_PATH}")
+        except Exception as e:
+            print(f"Warning: failed to save simclr checkpoint: {e}")
+        try:
+            save_checkpoint(probe, path=Config.PROBE_CHECKPOINT_PATH)
+            print(f"Saved probe checkpoint to {Config.PROBE_CHECKPOINT_PATH}")
+        except Exception as e:
+            print(f"Warning: failed to save probe checkpoint: {e}")
 
     # 5. Explainability: Integrated Gradients
     print(f"\n{'='*60}")
