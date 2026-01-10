@@ -61,6 +61,29 @@ This will:
 4. Generate attribution visualizations using Integrated Gradients
 5. Test robustness on corrupted CIFAR-10 test sets
 
+### Checkpointing and resuming
+
+This project now supports saving and loading model checkpoints. By default checkpoints are saved to `./checkpoints/simclr.pth` and the linear probe to `./checkpoints/probe.pth` (configurable in `simclr/config.py`).
+
+To resume from an existing checkpoint when starting training, use the `--resume` flag:
+
+```bash
+python main.py --resume
+```
+
+Behavior:
+- If a checkpoint exists at the configured path it will be loaded into the SimCLR model before training begins.
+- If no checkpoint is found, training proceeds from scratch.
+- After training the script attempts to save the SimCLR model and the linear probe to the configured checkpoint paths.
+
+You can change checkpoint paths and enable/disable saving by editing `simclr/config.py`:
+
+- `CHECKPOINT_PATH` — path used for saving/loading the SimCLR model checkpoint (default: `./checkpoints/simclr.pth`)
+- `PROBE_CHECKPOINT_PATH` — path used for the linear probe checkpoint (default: `./checkpoints/probe.pth`)
+- `SAVE_CHECKPOINTS` — set to `False` to disable automatic saving after training
+
+The checkpoint files are standard PyTorch checkpoints containing at least `model_state_dict`. When an optimizer is provided to the save helper it will also include `optimizer_state_dict` to enable exact resume of optimizer state.
+
 ## Configuration
 
 All hyperparameters can be modified in `simclr/config.py`:
