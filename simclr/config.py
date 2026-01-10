@@ -11,7 +11,7 @@ class Config:
     # SimCLR hyperparameters
     PROJECTION_DIM = 128  # Dimension of projection head output
     TEMPERATURE = 0.5  # Temperature parameter for NT-Xent loss
-    EPOCHS = 10  # Number of training epochs
+    EPOCHS = 100  # Number of training epochs
     BATCH_SIZE = 256  # Batch size for contrastive learning
     LEARNING_RATE = 3e-4  # Learning rate
     WEIGHT_DECAY = 1e-4  # Weight decay for optimizer
